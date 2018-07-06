@@ -1,0 +1,317 @@
+import time
+start = time.time()
+
+setup_time1 = [[ 0,40,36, 7,46,37, 8,22,36,14,50,47,20,40,11,23,16,35,42,17],
+               [32, 0,20,26,48,37,46,40,39,31,38,44,29,47,34,40, 1,40,50,37],
+               [ 3,36, 0,25,10, 7,22,40,40,45, 8,19,34,38,13,33,11, 3,13,22],
+               [25,37, 8, 0,29,34,15, 6,43,30,23, 2,34,17, 1, 2, 6,22, 2, 3],
+               [44,27, 8,32, 0,35,48,29, 5, 5,16,30,48,14,22, 6,48,20, 1,12],
+               [18,12, 1,17,45, 0,46,35,18,19,28,28, 8,42,30,14,23,46,41,35],
+               [15,42, 6, 4,45,50, 0,47,43,28,35,13,21,33,39,46,10, 7,27, 5],
+               [43, 9,12,41,21,26, 8, 0, 2, 6,18,26,24,14,47,50,23,48,28,11],
+               [50, 7,34,49,12,23,14,11, 0,45,47, 9,13,32,32, 7,34,31,16,21],
+               [42,18,27,47,37,46, 1,21,29, 0,46,37, 1,28, 3,46, 9,49,46,44],
+               [30,48,28,10,15,12, 8,16,29,12, 0,33,50,50,18,46,17,26,22,43],
+               [ 1,19, 4,22,20,31,21,28,43, 7,13, 0,28,29,32,11,49,46,48, 4],
+               [15,32, 9,44,16,17,18,42,25,49,40,23, 0,14,24, 5,25,45, 3,23],
+               [42,26, 7, 8,41,19,28,42,43,28,14,12,25, 0,23,19, 6,16,31,38],
+               [45, 1,45,46,32,27,38,13, 3,19,28,47,21,32, 0, 9,29,45,46, 7],
+               [47,19,23,17, 8,50,45,36,12, 5,22,38,13,43,44, 0,27, 1,45,31],
+               [22,50,40,18,48,47,30,11,13,34,34,10,50, 8,37,33, 0,42,22,33],
+               [42, 4,19,38,49,14,37,13, 4,28,16,28,20,12,28,38,40, 0,26,50],
+               [30, 1,50,19,35,49,16,45,12,22,31,46,14, 3,28,16, 9, 1, 0,40],
+               [42,47,37,20,10,29,17,24, 3,12,39,29, 5,19, 1, 5,35,37,24, 0]]
+
+unschedule = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"]
+
+processing_time =[140,115,124,66,130,98,72,131,64,146,88,115,143,99,142,115,99,65,108,132]
+
+machine1 = []#할당된 job
+machine2 = []
+machine3 = []
+
+machine_complitiontime1 = 0#현재까지 진행시간
+machine_complitiontime2 = 0
+machine_complitiontime3 = 0
+
+precedence1 = []
+precedence2 = []
+precedence3 = []
+
+Machine_availability1=[]
+Machine_availability2=[]
+Machine_availability3=[]
+
+avail_time= []#ready time이라고 생각하면 쉽다
+compl_time = []#job을 끝마친 시각
+start_time= []
+
+for i in range(len(processing_time)):
+    start_time.append(0)
+
+for i in range(len(processing_time)):
+    if str(i+1) in precedence1:
+        if str(i+1) == precedence1[0]:
+            avail_time.append(0)
+        else:
+            avail_time.append(1000000)
+    elif str(i+1) in precedence2:
+        if str(i+1) == precedence2[0]:
+            avail_time.append(0)
+        else:
+            avail_time.append(1000000)
+    elif str(i+1) in precedence3:
+        if str(i+1) == precedence3[0]:
+            avail_time.append(0)
+        else:
+            avail_time.append(1000000)
+    else:
+        avail_time.append(0)
+
+for i in range(len(processing_time)):
+    compl_time.append(1000000)
+
+##################################################################################################### Initial value
+
+def avail_job_intime(s,t):#job s를 시점 t에 할당 가능한가?
+    s = int(s)
+    if avail_time[s-1] <= t:
+        return True
+    else:
+        return False
+
+def avail_job_inmachine(s, a):#job s를 machine a 에 할당 가능 한가
+    s = str(s)
+    if a == 2:
+        if s in Machine_availability2:
+            return True
+        elif s in Machine_availability1:
+            if s in Machine_availability2:
+                return True
+            else:
+                return False
+        elif s in Machine_availability3:
+            if s in Machine_availability2:
+                return  True
+            else:
+                return False
+        else:
+            return True
+    if a == 1:
+        if s in Machine_availability1:
+            return True
+        elif s in Machine_availability2:
+            if s in Machine_availability1:
+                return True
+            else:
+                return False
+        elif s in Machine_availability3:
+            if s in Machine_availability1:
+                return True
+            else:
+                return False
+        else:
+            return True
+    if a == 3:
+        if s in Machine_availability3:
+            return True
+        elif s in Machine_availability1:
+            return False
+        elif s in Machine_availability2:
+            return False
+        else:
+            return True
+
+def processing_time_with_setup(job, prev_job):
+    if prev_job == 0:
+        return 0
+    a = int(job)-1
+    b = int(prev_job)-1
+    return setup_time1[b][a]
+
+def prevjob(machine):
+    if machine == 1:
+        if len(machine1) == 0:
+            return False
+        return machine1[len(machine1)-1]
+    if machine == 2:
+        if len(machine2) == 0:
+            return False
+        return machine2[len(machine2)-1]
+    if machine == 3:
+        if len(machine3) == 0:
+            return False
+        return machine3[len(machine3)-1]
+
+def update_avail_time(job):
+    index_h1 = 0
+    index_j1 = 0
+    index_l1 = 0
+    if job in precedence1:
+        if precedence1.index(job) != 0:
+            index_g = precedence1.index(job)
+            index_h = precedence1[index_g - 1]
+            index_h1 = compl_time[int(index_h) - 1]
+    if job in precedence2:
+        if precedence2.index(job) != 0:
+            index_i = precedence2.index(job)
+            index_j = precedence2[index_i - 1]
+            index_j1 = compl_time[int(index_j) - 1]
+    if job in precedence3:
+        if precedence3.index(job) != 0:
+            index_k = precedence3.index(job)
+            index_l = precedence3[index_k - 1]
+            index_l1 = compl_time[int(index_l) - 1]
+    return max(index_h1,index_j1,index_l1)
+
+def choose(machine,time):
+    set1 = []
+    if machine == 1:
+        for i in range(len(Machine_availability1)):
+            set1.append(Machine_availability1[i])
+    elif machine == 2:
+        for i in range(len(Machine_availability2)):
+            set1.append(Machine_availability2[i])
+    elif machine == 3:
+        for i in range(len(Machine_availability3)):
+            set1.append(Machine_availability3[i])
+    if len(set1) == 0:
+        return choose2(machine,time)
+    set2 = []
+    for i in range(len(set1)):
+        if compl_time[int(set1[i])-1] == 1000000:
+            if avail_time[int(set1[i])-1] <=time:
+                set2.append(set1[i])
+    if len(set2) == 0:
+        return choose2(machine,time)
+    set3 = []
+    if prevjob(machine) == False:
+        for i in range(len(set2)):
+            set3.append(processing_time[int(set2[i])-1])
+        a = set3.index(max(set3))
+        return set2[a]
+    else:
+        for i in range(len(set2)):
+            set3.append(processing_time_with_setup(set2[i],prevjob(machine))+processing_time[int(set2[i])-1])
+        a = set3.index(min(set3))
+        return set2[a]
+
+def choose2(machine,time):
+    set1 =[]
+    if machine == 1:
+        for i in range(len(unschedule)):
+            if avail_job_inmachine(unschedule[i],1) == True:
+                set1.append(unschedule[i])
+    elif machine == 2:
+        for i in range(len(unschedule)):
+            if avail_job_inmachine(unschedule[i],2) == True:
+                set1.append(unschedule[i])
+    elif machine == 3:
+        for i in range(len(unschedule)):
+            if avail_job_inmachine(unschedule[i],3) == True:
+                set1.append(unschedule[i])
+    if len(set1) == 0:
+        return False
+    set2 = []
+    for i in range(len(set1)):
+        if compl_time[int(set1[i])-1] == 1000000:
+            if avail_time[int(set1[i])-1] <= time:
+                set2.append(set1[i])
+    if len(set2) == 0:
+        return False
+    set3 = []
+    if prevjob(machine) == False:
+        for i in range(len(set2)):
+            set3.append(processing_time[int(set2[i])-1])
+        a = set3.index(max(set3))
+        return set2[a]
+    else:
+        for i in range(len(set2)):
+            set3.append(processing_time_with_setup(set2[i],prevjob(machine))+processing_time[int(set2[i])-1])
+        a = set3.index(min(set3))
+        return set2[a]
+
+##################################################################################################################
+
+b = 0
+c = 0
+while len(unschedule) > 0:
+    machine_time = [machine_complitiontime1, machine_complitiontime2, machine_complitiontime3]
+    a = 0
+    if b != 0:
+        index_b = machine_time.index(min(machine_time))
+        index_c = machine_time.index(max(machine_time))
+        index_d = 3 -index_b-index_c
+        if index_b == 0:
+            machine_complitiontime1 = machine_time[index_d]
+        elif index_b == 1:
+            machine_complitiontime2 = machine_time[index_d]
+        else:
+            machine_complitiontime3 = machine_time[index_d]
+        b = 0
+        c += 1
+    end = time.time()
+    if end - start > 0.1:
+        break
+    if machine_complitiontime1 == min(machine_complitiontime1,machine_complitiontime2,machine_complitiontime3):
+        index_a = choose(1, machine_complitiontime1)  # 작업 선택
+        if index_a == False:
+            b += 1
+        if index_a != False:
+            start_time[int(index_a) - 1] = machine_complitiontime1
+            compl_time[int(index_a) - 1] \
+                = machine_complitiontime1 + processing_time_with_setup(index_a, prevjob(1)) \
+                  + processing_time[int(index_a) - 1]
+            machine1.append(index_a)  # 기계 1 할당
+            machine_complitiontime1 = compl_time[int(index_a) - 1]
+            unschedule.remove(index_a)
+            for i in range(len(avail_time)):
+                avail_time[i] = update_avail_time(str(i + 1))
+    if machine_complitiontime2 == min(machine_complitiontime1,machine_complitiontime2,machine_complitiontime3):
+        index_a = choose(2, machine_complitiontime2)  # 작업 선택
+        if index_a == False:
+            b += 1
+        if index_a != False:
+            start_time[int(index_a) - 1] = machine_complitiontime2
+            compl_time[int(index_a) - 1] \
+                = machine_complitiontime2 + processing_time_with_setup(index_a, prevjob(2)) \
+                  + processing_time[int(index_a) - 1]
+            machine2.append(index_a)  # 기계 2 할당
+            machine_complitiontime2 = compl_time[int(index_a) - 1]
+            unschedule.remove(index_a)
+            for i in range(len(avail_time)):
+                avail_time[i] = update_avail_time(str(i + 1))
+    if machine_complitiontime3 == min(machine_complitiontime1,machine_complitiontime2,machine_complitiontime3):
+        index_a = choose(3, machine_complitiontime3)  # 작업 선택
+        if index_a == False:
+            b += 1
+        if index_a != False:
+            start_time[int(index_a) - 1] = machine_complitiontime3
+            compl_time[int(index_a) - 1] \
+                = machine_complitiontime3 + processing_time_with_setup(index_a, prevjob(3)) \
+                  + processing_time[int(index_a) - 1]
+            machine3.append(index_a)  # 기계 3 할당
+            machine_complitiontime3 = compl_time[int(index_a) - 1]
+            unschedule.remove(index_a)
+            for i in range(len(avail_time)):
+                avail_time[i] = update_avail_time(str(i + 1))
+    if c == 2:
+        index_c = max(machine_time)
+        machine_complitiontime1 = index_c
+        machine_complitiontime2 = index_c
+        machine_complitiontime3 = index_c
+        c = 0
+        b = 0
+
+####################################################################################################### Allocation
+
+end = time.time()
+print("unschedule : ",unschedule)
+print("Cmax : ",max(compl_time))
+print("comp_time : ",compl_time)
+print("start_time : ",start_time)
+print("machine1 : ",machine1)
+print("machine2 : ",machine2)
+print("machine3 : ", machine3)
+print("avail_time : ",avail_time)
+print("Elapsed Time : ",end-start,"s")
